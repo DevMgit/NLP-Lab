@@ -2,39 +2,82 @@ import collections
 import nltk
 from nltk.util import ngrams
 from nltk.tokenize import word_tokenize
+
+
 def get_ngrams(text, n):
- """Generate n-grams from the given text."""
- tokens = word_tokenize(text.lower())
- n_grams = ngrams(tokens, n)
- return list(n_grams)
+    """Generate n-grams from the given text."""
+    tokens = word_tokenize(text.lower())
+    n_grams = ngrams(tokens, n)
+    return list(n_grams)
+
+
 def count_ngrams(ngrams):
- """Count the occurrences of each n-gram."""
- ngram_counts = collections.Counter(ngrams)
- return ngram_counts
+    """Count the occurrences of each n-gram."""
+    ngram_counts = collections.Counter(ngrams)
+    return ngram_counts
+
+
 def laplace_smoothing(ngram_counts, unigram_counts, vocab_size, n):
- """Apply Laplace smoothing to the n-gram counts."""
-smoothed_probs = {}
- 
- for ngram in ngram_counts:
- context = ngram[:-1]
- context_count = unigram_counts[context] if n > 1 else sum(unigram_counts.values())
- smoothed_probs[ngram] = (ngram_counts[ngram] + 1) / (context_count + vocab_size)
- return smoothed_probs
+    """Apply Laplace smoothing to the n-gram counts."""
+    smoothed_probs = {}
+
+    for ngram in ngram_counts:
+        context = ngram[:-1]
+
+        if n > 1:
+            context_count = unigram_counts[context]
+        else:
+            context_count = sum(unigram_counts.values())
+
+        smoothed_probs[ngram] = (
+            (ngram_counts[ngram] + 1)
+            / (context_count + vocab_size)
+        )
+
+    return smoothed_probs
+
+
 def build_vocabulary(text):
- """Build a vocabulary from the given text."""
- tokens = word_tokenize(text.lower())
- vocab = set(tokens)
- return vocab
+    """Build a vocabulary from the given text."""
+    tokens = word_tokenize(text.lower())
+    vocab = set(tokens)
+    return vocab
+
+
 # Example text
-text = "this is a sample text with several words this is another sample text with some different words"
+text = (
+    "this is a sample text with several words "
+    "this is another sample text with some different words"
+)
+
 # Set n for n-grams
-n = 2 # For example, bi-grams
+n = 2  # For example, bi-grams
+
 # Generate n-grams
 ngrams_list = get_ngrams(text, n)
 unigrams_list = get_ngrams(text, 1)
+
 # Count n-grams and unigrams
 ngram_counts = count_ngrams(ngrams_list)
 unigram_counts = count_ngrams(unigrams_list)
+
+# Build vocabulary
+vocab = build_vocabulary(text)
+vocab_size = len(vocab)
+
+# Apply Laplace smoothing
+smoothed_probs = laplace_smoothing(
+    ngram_counts,
+    unigram_counts,
+    vocab_size,
+    n
+)
+
+# Output results
+print("N-grams with their smoothed probabilities:")
+
+for ngram, prob in smoothed_probs.items():
+    print(f"{ngram}: {prob:.6f}")unigram_counts = count_ngrams(unigrams_list)
 # Build vocabulary
 vocab = build_vocabulary(text)
 vocab_size = len(vocab)
